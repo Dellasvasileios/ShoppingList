@@ -17,11 +17,11 @@ public class SplashActivity extends AppCompatActivity {
             @Override
             public void run() {
                 /* Create an Intent that will start the Menu-Activity. */
-                Intent mainIntent = new Intent(SplashActivity.this,MainActivity.class);
-                startActivity(mainIntent);
+                Intent intent = new Intent(SplashActivity.this,LogInActivity.class);
+                startActivity(intent);
                 finish();
             }
-        }, 1000);
+        }, 5000);
 
     }
 }

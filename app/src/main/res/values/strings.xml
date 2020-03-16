@@ -1,3 +1,5 @@
 <resources>
-    <string name="app_name">ShoppingList</string>
+    <string name="app_name">Shopping List</string>
+    <string name="validEmail">Please enter a valid e-mail</string>
+    <string name="validPassword">Password should contain at list 6 charachters</string>
 </resources>
