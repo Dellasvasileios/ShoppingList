@@ -13,15 +13,30 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.common.base.MoreObjects;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 public class MainActivity extends AppCompatActivity {
 
     FloatingActionButton floatButton;
 
+    FirebaseUser firebaseUser;
+
+    FirebaseDatabase firebaseDatabase;
+    DatabaseReference databaseReference;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        firebaseDatabase = FirebaseDatabase.getInstance();
+        databaseReference = firebaseDatabase.getReference("shoppingLists");
+
+        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+
 
         floatButton = (FloatingActionButton) findViewById(R.id.floatingActionButton);
 
@@ -52,10 +67,14 @@ public class MainActivity extends AppCompatActivity {
                             Toast.makeText(MainActivity.this, "Shopping List name is empty", Toast.LENGTH_SHORT).show();
                         }
                         else {
-
+                            // 1. save the data
+                            String UserUID = firebaseUser.getUid();
+                            String uniqId = databaseReference.push().getKey();
+                            ShoppingList shoppingList = new ShoppingList(shoppingListName,uniqId);
+                            databaseReference.child(UserUID).child(uniqId).setValue(shoppingList);
+                            dialog.dismiss();
+                            // 2. and update the user Interface(make the recycler view)
                         }
-
-                        //save shopping list item
                     }
                 });
 
