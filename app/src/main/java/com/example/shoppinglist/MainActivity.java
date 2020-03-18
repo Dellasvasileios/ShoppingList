@@ -10,6 +10,9 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.common.base.MoreObjects;
@@ -18,9 +21,14 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.util.ArrayList;
+
 public class MainActivity extends AppCompatActivity {
 
     FloatingActionButton floatButton;
+    RecyclerView recycler;
+    ShoppingListAdapter shoppingListAdapter;
+    ArrayList<ShoppingList> shoppingLists;
 
     FirebaseUser firebaseUser;
 
@@ -37,6 +45,19 @@ public class MainActivity extends AppCompatActivity {
 
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
+        recycler = (RecyclerView)findViewById(R.id.recyclerView);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        recycler.setLayoutManager(layoutManager);
+        shoppingLists = new ArrayList<>();
+        shoppingListAdapter = new ShoppingListAdapter(shoppingLists, this);
+        recycler.setAdapter(shoppingListAdapter);
+
+
+        shoppingLists.add(new ShoppingList("lalala","dasdsa"));
+        shoppingLists.add(new ShoppingList("lalala","dasdsa"));
+        shoppingLists.add(new ShoppingList("lalala","dasdsa"));
+        shoppingLists.add(new ShoppingList("lalala","dasdsa"));
+        shoppingListAdapter.notifyDataSetChanged();
 
         floatButton = (FloatingActionButton) findViewById(R.id.floatingActionButton);
 
