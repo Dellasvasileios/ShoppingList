@@ -19,3 +19,4 @@ The user will be able to create delete or update  his/her shopping list and also
 &nbsp;&nbsp;a.&nbsp; create shopping list item<br/>
 &nbsp;&nbsp;b.&nbsp; remove shopping list item<br/>
 &nbsp;&nbsp;c.&nbsp; Update shopping list item<br/>
+&nbsp;&nbsp;c.&nbsp; mark as checked a shopping list item<br/>
