@@ -6,14 +6,16 @@ public class ShoppingListItem implements Serializable {
 
     public String item;
     public String itemId;
+    public boolean checked;
 
     public ShoppingListItem(){
 
     }
 
-    public ShoppingListItem(String item, String itemId){
+    public ShoppingListItem(String item, String itemId, boolean checked){
         this.item = item;
         this.itemId = itemId;
+        this.checked = checked;
     }
 
     public String getItem() {
@@ -22,5 +24,9 @@ public class ShoppingListItem implements Serializable {
 
     public String getItemId() {
         return itemId;
+    }
+
+    public boolean getChecked() {
+        return checked;
     }
 }

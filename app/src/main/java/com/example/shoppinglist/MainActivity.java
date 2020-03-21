@@ -8,6 +8,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -18,8 +19,11 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.common.base.MoreObjects;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
@@ -52,12 +56,21 @@ public class MainActivity extends AppCompatActivity {
         shoppingListAdapter = new ShoppingListAdapter(shoppingLists, this);
         recycler.setAdapter(shoppingListAdapter);
 
+        databaseReference.child(firebaseUser.getUid()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                shoppingLists.clear();
+                for(DataSnapshot shoppingListSnapshot : dataSnapshot.getChildren()){
+                    shoppingLists.add(shoppingListSnapshot.getValue(ShoppingList.class));
+                }
+                shoppingListAdapter.notifyDataSetChanged();
+            }
 
-        shoppingLists.add(new ShoppingList("lalala","dasdsa"));
-        shoppingLists.add(new ShoppingList("lalala","dasdsa"));
-        shoppingLists.add(new ShoppingList("lalala","dasdsa"));
-        shoppingLists.add(new ShoppingList("lalala","dasdsa"));
-        shoppingListAdapter.notifyDataSetChanged();
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
 
         floatButton = (FloatingActionButton) findViewById(R.id.floatingActionButton);
 
@@ -91,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
                             // 1. save the data
                             String UserUID = firebaseUser.getUid();
                             String uniqId = databaseReference.push().getKey();
-                            ShoppingList shoppingList = new ShoppingList(shoppingListName,uniqId);
+                            ShoppingList shoppingList = new ShoppingList(shoppingListName,uniqId,false);
                             databaseReference.child(UserUID).child(uniqId).setValue(shoppingList);
                             dialog.dismiss();
                             // 2. and update the user Interface(make the recycler view)

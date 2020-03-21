@@ -19,6 +19,7 @@
         <activity android:name=".MainActivity"></activity>
         <activity android:name=".LogInActivity"></activity>
         <activity android:name=".RegisterActivity"></activity>
+        <activity android:name=".ShoppingListItems"></activity>
     </application>
 
 </manifest>
