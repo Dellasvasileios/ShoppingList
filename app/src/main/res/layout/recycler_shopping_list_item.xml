@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="20dp">
+
+    <CheckBox
+        android:id="@+id/checkBox_shoppingList"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/textView_shoopingListName"
+        android:layout_width="match_parent"
+        android:layout_height="29dp"
+        android:layout_weight="0.5"
+        android:textSize="20dp"
+        android:gravity="left"
+        android:text="TextView" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1">
+
+        <ImageView
+            android:id="@+id/imageViewEdit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:srcCompat="@drawable/ic_edit_black_24dp"
+            android:layout_toLeftOf="@+id/imageViewDelete"
+            />
+
+        <ImageView
+            android:id="@+id/imageViewDelete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:srcCompat="@drawable/ic_delete_black_24dp"
+            android:layout_alignParentRight="true"
+            android:layout_marginLeft="20dp"
+            />
+
+    </RelativeLayout>
+
+</LinearLayout>

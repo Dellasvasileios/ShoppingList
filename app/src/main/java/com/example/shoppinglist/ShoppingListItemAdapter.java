@@ -18,26 +18,31 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
 //it is important to say that some overriden methods works for each view item
 
-public class ShoppingListAdapter extends RecyclerView.Adapter<ShoppingListAdapter.ShoppingListHolder> {
+public class ShoppingListItemAdapter extends RecyclerView.Adapter<ShoppingListItemAdapter.ShoppingListItemHolder> {
 
-    private ArrayList<ShoppingList> shoppingLists;
+    private ArrayList<ShoppingListItem> shoppingListItems;
     private Context context;
+    private String shoppingListId;
 
     private FirebaseUser firebaseUser;
 
     private FirebaseDatabase firebaseDatabase;
     private DatabaseReference databaseReference;
 
-    public ShoppingListAdapter(ArrayList<ShoppingList> shoppingLists, Context context){
-        this.shoppingLists = shoppingLists;
+    public ShoppingListItemAdapter(ArrayList<ShoppingListItem> shoppingListItems, Context context, String shoppingListId){
+        this.shoppingListItems = shoppingListItems;
         this.context = context;
+        this.shoppingListId = shoppingListId;
 
         firebaseDatabase = FirebaseDatabase.getInstance();
         databaseReference = firebaseDatabase.getReference("shoppingLists");
@@ -48,36 +53,27 @@ public class ShoppingListAdapter extends RecyclerView.Adapter<ShoppingListAdapte
 
     // This method creates views for the RecyclerView by inflating the layout
     // Into the viewHolders which helps to display the items in the RecyclerView
-    public ShoppingListHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType){
+    public ShoppingListItemHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType){
         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
-        View view = layoutInflater.inflate(R.layout.recycler_shoppim_list, parent, false);
-        return new ShoppingListHolder(view);
+        View view = layoutInflater.inflate(R.layout.recycler_shopping_list_item, parent, false);
+        return new ShoppingListItemHolder(view);
     }
 
     // This method is called when binding the data to the views being created in RecyclerView
     @Override
-    public void onBindViewHolder(@NonNull final ShoppingListHolder holder, final int position) {
-        final ShoppingList shoppingList = shoppingLists.get(position);
+    public void onBindViewHolder(@NonNull final ShoppingListItemHolder holder, final int position) {
+        final ShoppingListItem shoppingListItem = shoppingListItems.get(position);
 
-        if(shoppingList.checked == true){
+        if(shoppingListItem.checked == true){
             holder.checkboxShoppingList.setChecked(true);
         }
         else{
             holder.checkboxShoppingList.setChecked(false);
         }
         // Set the data to the views here
-        holder.setShoppingListName(shoppingList.getName());
+        holder.setShoppingListItemName(shoppingListItem.getItem());
         holder.imageViewEdit.setBackgroundResource(R.drawable.ic_edit_black_24dp);
         holder.imageViewDelete.setBackgroundResource(R.drawable.ic_delete_black_24dp);
-
-        holder.shoppingListNameTextView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(context, ShoppingListItemsActivity.class);
-                intent.putExtra("shoppingListId",shoppingList.shoppingListId);
-                context.startActivity(intent);
-            }
-        });
 
         holder.imageViewEdit.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -85,7 +81,7 @@ public class ShoppingListAdapter extends RecyclerView.Adapter<ShoppingListAdapte
                 final Dialog dialog = new Dialog(context);
                 dialog.setContentView(R.layout.edit_shopping_list_name);
                 final EditText shoppingListNameText = (EditText) dialog.findViewById(R.id.shopping_list_name);
-                shoppingListNameText.setText(shoppingList.name);
+                shoppingListNameText.setText(shoppingListItem.item);
                 dialog.show();
 
 
@@ -104,13 +100,13 @@ public class ShoppingListAdapter extends RecyclerView.Adapter<ShoppingListAdapte
                     public void onClick(View v) {
                         String shoppingListName = shoppingListNameText.getText().toString();
                         if((shoppingListName!= null && shoppingListName.trim().isEmpty()) || shoppingListName == null){
-                            Toast.makeText(context, "Shopping List name is empty", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(context, "Shopping List item name is empty", Toast.LENGTH_SHORT).show();
                         }
                         else {
                             // 1. save the data
                             String UserUID = firebaseUser.getUid();
-                            shoppingList.name = shoppingListName;
-                            databaseReference.child(UserUID).child(shoppingList.shoppingListId).setValue(shoppingList);
+
+                            databaseReference.child(UserUID).child(shoppingListId).child("shoppingListItems").child(String.valueOf(position)).child("item").setValue(shoppingListName);
                             dialog.dismiss();
                         }
                     }
@@ -139,9 +135,28 @@ public class ShoppingListAdapter extends RecyclerView.Adapter<ShoppingListAdapte
                 deleteButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        String UserUID = firebaseUser.getUid();
-                        databaseReference.child(UserUID).child(shoppingList.shoppingListId).removeValue();
-                        shoppingLists.remove(shoppingList);
+                        final String UserUID = firebaseUser.getUid();
+
+
+                        databaseReference.child(UserUID).child(shoppingListId).child("shoppingListItems").addListenerForSingleValueEvent(new ValueEventListener() {
+                            ArrayList<ShoppingListItem> shoppingListItems = new ArrayList<>();
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                for(DataSnapshot shoppingListItemSnapshot : dataSnapshot.getChildren()){
+                                    shoppingListItems.add(shoppingListItemSnapshot.getValue(ShoppingListItem.class));
+                                }
+                                shoppingListItems.remove(position);
+                                databaseReference.child(UserUID).child(shoppingListId).child("shoppingListItems").removeValue();
+                                databaseReference.child(UserUID).child(shoppingListId).child("shoppingListItems").setValue(shoppingListItems);
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                            }
+                        });
+
+
                         dialog.dismiss();
                     }
                 });
@@ -152,12 +167,12 @@ public class ShoppingListAdapter extends RecyclerView.Adapter<ShoppingListAdapte
             @Override
             public void onClick(View v) {
                 if(holder.checkboxShoppingList.isChecked()){
-                    shoppingList.checked = true;
+                    shoppingListItem.checked = true;
                 }
                 else{
-                    shoppingList.checked = false;
+                    shoppingListItem.checked = false;
                 }
-                databaseReference.child(firebaseUser.getUid()).child(shoppingList.shoppingListId).setValue(shoppingList);
+                databaseReference.child(firebaseUser.getUid()).child(shoppingListId).child("shoppingListItems").child(String.valueOf(position)).child("checked").setValue(shoppingListItem.checked);
             }
         });
         // You can set click listners to indvidual items in the viewholder here
@@ -167,18 +182,18 @@ public class ShoppingListAdapter extends RecyclerView.Adapter<ShoppingListAdapte
 
     @Override
     public int getItemCount() {
-        return shoppingLists == null? 0: shoppingLists.size();
+        return shoppingListItems == null? 0: shoppingListItems.size();
     }
 
     // This is your ViewHolder class that helps to populate data to the view
-    public class ShoppingListHolder extends RecyclerView.ViewHolder{
+    public class ShoppingListItemHolder extends RecyclerView.ViewHolder{
 
         public TextView shoppingListNameTextView;
         public ImageView imageViewEdit;
         public ImageView imageViewDelete;
         public CheckBox checkboxShoppingList;
 
-        public ShoppingListHolder(View itemView) {
+        public ShoppingListItemHolder(View itemView) {
             super(itemView);
             shoppingListNameTextView =(TextView) itemView.findViewById(R.id.textView_shoopingListName);
             imageViewEdit = (ImageView) itemView.findViewById(R.id.imageViewEdit);
@@ -187,9 +202,10 @@ public class ShoppingListAdapter extends RecyclerView.Adapter<ShoppingListAdapte
 
         }
 
-        public void setShoppingListName(String name){
+        public void setShoppingListItemName(String name){
             shoppingListNameTextView.setText(name);
         }
     }
 
 }
+
